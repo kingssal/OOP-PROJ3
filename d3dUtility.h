@@ -57,15 +57,15 @@ namespace d3d  //c++에서 네임스페이스를 정의, 이름 충돌을 방지
 	{
 		if( t )
 		{
-			delete t;
-			t = 0;
+			delete t; //nullptr이 아니라면 포인터가 가리키는 객체를 메모리에서 해제한다. 
+			t = 0;  //포인터가 더 이상 유효하지 않은 객체를 가리키지 않도록 함
 		}
 	}
 
-	//
-	// 색상들 미리 정해두기.
-	//
-	const D3DXCOLOR      WHITE( D3DCOLOR_XRGB(255, 255, 255) );
+	//----------------------------------------------------------------------------------------------------------------
+	// 색상들 미리 정해두기. D3DXCOLOR는 마이크로소프트 Direct3D API, 특히 D3DX 유틸리티 라이브러리의 일부로 제공되는 데이터 타입이다.
+	//----------------------------------------------------------------------------------------------------------------
+	const D3DXCOLOR      WHITE( D3DCOLOR_XRGB(255, 255, 255) );  //D3DCOLOR_XRGB는 RGB색상을 받아서 Direct3D에 사용할 수 있는 색상형식으로 변환
 	const D3DXCOLOR      BLACK( D3DCOLOR_XRGB(  0,   0,   0) );
 	const D3DXCOLOR        RED( D3DCOLOR_XRGB(255,   0,   0) );
 	const D3DXCOLOR      GREEN( D3DCOLOR_XRGB(  0, 255,   0) );
@@ -75,52 +75,56 @@ namespace d3d  //c++에서 네임스페이스를 정의, 이름 충돌을 방지
 	const D3DXCOLOR    MAGENTA( D3DCOLOR_XRGB(255,   0, 255) );
 	const D3DXCOLOR	   DARKRED( D3DCOLOR_XRGB(215,	0,	0));
 
-	//
-	// Lights
-	//
-
+	//----------------------------------------------------------------------------------------------------------------
+	// Lights, D3DLIGHT9는 Direct3D 9 API에 사용되는 구조체, 광원의 속성을 나타냄
+	//----------------------------------------------------------------------------------------------------------------
 	D3DLIGHT9 InitDirectionalLight(D3DXVECTOR3* direction, D3DXCOLOR* color);
 	D3DLIGHT9 InitPointLight(D3DXVECTOR3* position, D3DXCOLOR* color);
 	D3DLIGHT9 InitSpotLight(D3DXVECTOR3* position, D3DXVECTOR3* direction, D3DXCOLOR* color);
  
-	//
-	// Materials
-	//
-
+	//----------------------------------------------------------------------------------------------------------------
+	// Materials, D3DMATERIAL9는 위와 비슷, 재질를 나타냄. 
+    // Ambient(a): 주변 광원에 의해 반사되는 색상을 정의, 
+    // Diffuse(d): 물체에 빛이 직접 닿아 반사될 때의 색상을 정의,
+    // Specular(s): 물체에 빛이 닿아 반사될 때의 반짝임을 정의
+    // Emissive(e): 물체 자체에서 나오는 빛의 색상을 정의
+    // Power(p): Specular의 반사 강도를 정의
+	//----------------------------------------------------------------------------------------------------------------
 	D3DMATERIAL9 InitMtrl(D3DXCOLOR a, D3DXCOLOR d, D3DXCOLOR s, D3DXCOLOR e, float p);
 
-	const D3DMATERIAL9 WHITE_MTRL  = InitMtrl(WHITE, WHITE, WHITE, BLACK, 2.0f);
+	const D3DMATERIAL9 WHITE_MTRL  = InitMtrl(WHITE, WHITE, WHITE, BLACK, 2.0f); 
 	const D3DMATERIAL9 RED_MTRL    = InitMtrl(RED, RED, RED, BLACK, 2.0f);
 	const D3DMATERIAL9 GREEN_MTRL  = InitMtrl(GREEN, GREEN, GREEN, BLACK, 2.0f);
 	const D3DMATERIAL9 BLUE_MTRL   = InitMtrl(BLUE, BLUE, BLUE, BLACK, 2.0f);
 	const D3DMATERIAL9 YELLOW_MTRL = InitMtrl(YELLOW, YELLOW, YELLOW, BLACK, 2.0f);
 
-	//
-	// Bounding Objects / Math Objects
-	//
 
+
+	//----------------------------------------------------------------------------------------------------------------
+	// Bounding Objects / Math Objects
+	//----------------------------------------------------------------------------------------------------------------
 	struct BoundingBox
 	{
-		BoundingBox();
+		BoundingBox(); //구조체의 기본 생성자. 백터를 초기화 하는데 사용.
 
-		bool isPointInside(D3DXVECTOR3& p);
+		bool isPointInside(D3DXVECTOR3& p);  //주어진 점 P가 경계 상자 내부에 있는지 여부, 일반적으로 p좌표를 경계 상자의 _min,_max좌표와 비교한다.
 
-		D3DXVECTOR3 _min;
-		D3DXVECTOR3 _max;
+		D3DXVECTOR3 _min;  //경계의 최소 x,y,z 좌표를 나타낸다.
+		D3DXVECTOR3 _max;   //경계의 최대 x,y,z 
 	};
 
 	struct BoundingSphere
 	{
 		BoundingSphere();
 
-		D3DXVECTOR3 _center;
-		float       _radius;
+		D3DXVECTOR3 _center; //구의 중심을 나타내는 D3DXVECTOR3 타입이 변수. 
+		float       _radius; //반지름
 	};
 
 	struct Ray
 	{
-		D3DXVECTOR3 _origin;
-		D3DXVECTOR3 _direction;
+		D3DXVECTOR3 _origin;  //광선의 시작점
+		D3DXVECTOR3 _direction; //광선의 방향WNDCLASS wc
 	};
 
 	//

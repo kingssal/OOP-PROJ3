@@ -62,7 +62,8 @@ public:
     ~CSphere(void) {}
 
 public:
-    bool create(IDirect3DDevice9* pDevice, D3DXCOLOR color = d3d::WHITE)  //공의 메시를 생성하고 재질을 설정, 실패할 경우 false
+    // 구의 메시를 생성하고 재질을 설정, 실패할 경우 false
+    bool create(IDirect3DDevice9* pDevice, D3DXCOLOR color = d3d::WHITE)  
     {
         if (NULL == pDevice)
             return false;
@@ -78,7 +79,8 @@ public:
         return true;
     }
 
-    void destroy(void) //메시 객체가 할당된 메모리를 해제한다.
+    //메시 객체가 할당된 메모리를 해제
+    void destroy(void) 
     {
         if (m_pSphereMesh != NULL) {
             m_pSphereMesh->Release();
@@ -86,7 +88,8 @@ public:
         }
     }
 
-    void draw(IDirect3DDevice9* pDevice, const D3DXMATRIX& mWorld) //공을 화면에 렌더링한다. 행렬 변환을 적용하고 재질을 설정한 후 메시를 그린다.
+    //공을 화면에 렌더링한다. 행렬 변환을 적용하고 재질을 설정한 후 메시를 그린다.
+    void draw(IDirect3DDevice9* pDevice, const D3DXMATRIX& mWorld) 
     {
         if (NULL == pDevice)
             return;
@@ -96,19 +99,37 @@ public:
 		m_pSphereMesh->DrawSubset(0);
     }
 
-    bool hasIntersected(CSphere& ball)  //다른 CSphere 객체와 충돌을 감지한다.
+    //다른 CSphere 객체와 충돌을 감지한다.
+    bool hasIntersected(CSphere& ball)  
 	{
 		// Insert your code here.
+        D3DXVECTOR3 center1 = this->getCenter();
+        D3DXVECTOR3 center2 = ball.getCenter();
 
+        float distance = D3DXVec3Length(&(center1 - center2));
+        float radiusSum = this->getRadius() + ball.getRadius();
+
+        return distance <= radiusSum;
 		return false;
 	}
 
-	void hitBy(CSphere& ball) //다른 공들과 부딪혔을 때, 처리를 구현
+    //다른 공들과 부딪혔을 때, 처리를 구현
+	void hitBy(CSphere& ball) 
 	{ 
 		// Insert your code here.
+        // 간단한 탄성 충돌 처리
+        D3DXVECTOR3 v1 = D3DXVECTOR3(this->getVelocity_X(), 0, this->getVelocity_Z());
+        D3DXVECTOR3 v2 = D3DXVECTOR3(ball.getVelocity_X(), 0, ball.getVelocity_Z());
+
+        D3DXVECTOR3 newV1 = v1 - (v1 - v2) * 2.0f; // 예시로 간단한 반사 벡터 계산
+        D3DXVECTOR3 newV2 = v2 - (v2 - v1) * 2.0f;
+
+        this->setPower(newV1.x, newV1.z);
+        ball.setPower(newV2.x, newV2.z);
 	}
 
-	void ballUpdate(float timeDiff)  //시간 변화에 따라 공의 위치를 업데이트. 이동 속도가 특정 임계값 이상일 경우에만 위치가 업데이트 된다.이동속도가 떨어지면 공을 정지시킨다.
+    //시간 변화에 따라 공의 위치를 업데이트. 이동 속도가 특정 임계값 이상일 경우에만 위치가 업데이트 된다.이동속도가 떨어지면 공을 정지시킨다.
+	void ballUpdate(float timeDiff)  
 	{
 		const float TIME_SCALE = 3.3; 
 		D3DXVECTOR3 cord = this->getCenter();
@@ -141,16 +162,19 @@ public:
 		this->setPower(getVelocity_X() * rate, getVelocity_Z() * rate);
 	}
 
+    //x,z축의 속도를 구한다.
 	double getVelocity_X() { return this->m_velocity_x;	}
 	double getVelocity_Z() { return this->m_velocity_z; }
 
+    //구의 속도를 정한다.
 	void setPower(double vx, double vz)     //공의 속도를 설정한다.
 	{
 		this->m_velocity_x = vx;
 		this->m_velocity_z = vz;
 	}
 
-	void setCenter(float x, float y, float z)  //공의 중심 위치를 설정하고 이에 다라 로컬 변환 행렬을 업데이트한다.
+    //구의 중심 위치를 정하고 로컬 변환 행렬을 업데이트
+	void setCenter(float x, float y, float z)  
 	{
 		D3DXMATRIX m;
 		center_x=x;	center_y=y;	center_z=z;
@@ -158,10 +182,14 @@ public:
 		setLocalTransform(m);
 	}
 
-	float getRadius(void)  const { return (float)(M_RADIUS);  }             //반지름 반환
-    const D3DXMATRIX& getLocalTransform(void) const { return m_mLocal; }    //로컬 변환 행렬 반환
+    //반지름 반환
+	float getRadius(void)  const { return (float)(M_RADIUS);  }             
+    //로컬 변환 행렬 반환
+    const D3DXMATRIX& getLocalTransform(void) const { return m_mLocal; }    
+    //로컬 변환 행렬 설정
     void setLocalTransform(const D3DXMATRIX& mLocal) { m_mLocal = mLocal; } 
-    D3DXVECTOR3 getCenter(void) const   //중심 위치를 반환
+    //중심 위치를 반환
+    D3DXVECTOR3 getCenter(void) const   
     {
         D3DXVECTOR3 org(center_x, center_y, center_z);
         return org;
@@ -201,6 +229,7 @@ public:
     }
     ~CWall(void) {}
 public:
+    //벽을 생성하고 초기화한다.
     bool create(IDirect3DDevice9* pDevice, float ix, float iz, float iwidth, float iheight, float idepth, D3DXCOLOR color = d3d::WHITE)
     {
         if (NULL == pDevice)
@@ -219,6 +248,7 @@ public:
             return false;
         return true;
     }
+    //메모리 해제
     void destroy(void)
     {
         if (m_pBoundMesh != NULL) {
@@ -226,6 +256,7 @@ public:
             m_pBoundMesh = NULL;
         }
     }
+    //벽을 화면에 렌더링
     void draw(IDirect3DDevice9* pDevice, const D3DXMATRIX& mWorld)
     {
         if (NULL == pDevice)
@@ -236,17 +267,49 @@ public:
 		m_pBoundMesh->DrawSubset(0);
     }
 
+    //벽과 구체의 충돌의 감지
 	bool hasIntersected(CSphere& ball) 
 	{
-		// Insert your code here.
+        D3DXVECTOR3 ballCenter = ball.getCenter();
+        float ballRadius = ball.getRadius();
+
+        // 벽의 경계 계산
+        float minX = m_x - m_width / 2;
+        float maxX = m_x + m_width / 2;
+        float minZ = m_z - m_depth / 2;
+        float maxZ = m_z + m_depth / 2;
+
+        // 구체 중심과 벽 경계 사이의 최소 거리 계산
+        float distanceX = max(minX, min(ballCenter.x, maxX));
+        float distanceZ = max(minZ, min(ballCenter.z, maxZ));
+
+        // 구체 중심과의 거리 계산
+        float distance = sqrt((distanceX - ballCenter.x) * (distanceX - ballCenter.x) + (distanceZ - ballCenter.z) * (distanceZ - ballCenter.z));
+
+        // 충돌 판단
+        return distance <= ballRadius;
 		return false;
 	}
 
+    //벽과 구체의 충돌을 처리하기
 	void hitBy(CSphere& ball) 
 	{
 		// Insert your code here.
-	}    
+        // 충돌 처리 로직
+        // 예: 구체의 속도를 반대 방향으로 변경
+         double velocityX = ball.getVelocity_X();
+        double velocityZ = ball.getVelocity_Z();
 
+        // 벽의 방향에 따라 속도의 방향을 변경
+        // 예시로, X축 방향의 벽에 부딪혔을 때 X축 방향의 속도를 반전
+        if (abs(velocityX) > abs(velocityZ)) {
+          ball.setPower(-velocityX, velocityZ);
+        } else {
+        // Z축 방향의 벽에 부딪혔을 때 Z축 방향의 속도를 반전
+        ball.setPower(velocityX, -velocityZ);
+    }
+	}    
+    //벽의 위치 설정
 	void setPosition(float x, float y, float z)
 	{
 		D3DXMATRIX m;
@@ -256,7 +319,7 @@ public:
 		D3DXMatrixTranslation(&m, x, y, z);
 		setLocalTransform(m);
 	}
-
+    //벽의 높이 설정
     float getHeight(void) const { return M_HEIGHT; }
 
 
@@ -360,7 +423,7 @@ private:
 // Global variables
 // -----------------------------------------------------------------------------
 CWall	g_legoPlane;
-CWall	g_legowall[4];
+CWall	g_legowall[3];
 CSphere	g_sphere[4];
 CSphere	g_target_blueball;
 CLight	g_light;
@@ -396,8 +459,8 @@ bool Setup()
 	g_legowall[1].setPosition(0.0f, 0.12f, -3.06f);
 	if (false == g_legowall[2].create(Device, -1, -1, 0.12f, 0.3f, 6.24f, d3d::DARKRED)) return false;
 	g_legowall[2].setPosition(4.56f, 0.12f, 0.0f);
-	if (false == g_legowall[3].create(Device, -1, -1, 0.12f, 0.3f, 6.24f, d3d::DARKRED)) return false;
-	g_legowall[3].setPosition(-4.56f, 0.12f, 0.0f);
+	// if (false == g_legowall[3].create(Device, -1, -1, 0.12f, 0.3f, 6.24f, d3d::DARKRED)) return false;
+	// g_legowall[3].setPosition(-4.56f, 0.12f, 0.0f);
 
 	// create four balls and set the position
 	for (i=0;i<4;i++) {
@@ -449,7 +512,7 @@ bool Setup()
 void Cleanup(void)
 {
     g_legoPlane.destroy();
-	for(int i = 0 ; i < 4; i++) {
+	for(int i = 0 ; i < 3; i++) {
 		g_legowall[i].destroy();
 	}
     destroyAllLegoBlock();
@@ -473,7 +536,7 @@ bool Display(float timeDelta)
 		// update the position of each ball. during update, check whether each ball hit by walls.
 		for( i = 0; i < 4; i++) {
 			g_sphere[i].ballUpdate(timeDelta);
-			for(j = 0; j < 4; j++){ g_legowall[i].hitBy(g_sphere[j]); }
+			for(j = 0; j < 3; j++){ g_legowall[i].hitBy(g_sphere[j]); }
 		}
 
 		// check whether any two balls hit together and update the direction of balls
@@ -486,7 +549,7 @@ bool Display(float timeDelta)
 
 		// draw plane, walls, and spheres
 		g_legoPlane.draw(Device, g_mWorld);
-		for (i=0;i<4;i++) 	{
+		for (i=0;i<3;i++) 	{
 			g_legowall[i].draw(Device, g_mWorld);
 			g_sphere[i].draw(Device, g_mWorld);
 		}
